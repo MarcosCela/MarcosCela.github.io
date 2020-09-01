@@ -1,0 +1,25 @@
+baseURL = "https://wiki.mcela.dev/"
+languageCode = "en-us"
+title = "Wiki"
+theme = "ananke"
+googleAnalytics = ""
+MetaDataFormat = "yaml"
+DefaultContentLanguage = "en"
+SectionPagesMenu = "main"
+Paginate = 10
+enableRobotsTXT = true
+
+[sitemap]
+  changefreq = "monthly"
+  priority = 0.5
+  filename = "sitemap.xml"
+
+[params]
+  description = "A personal wiki and blog post place about things I find interesting"
+  github = "http://github.com/MarcosCela"
+  gitlab = "https://gitlab.com/Marcos.Cela"
+  linkedin = "https://es.linkedin.com/in/marcoscelalopez"
+  background_color_class = "bg-black"
+  featured_image = "/images/vigo.jpg"
+  recent_posts_number = 20
+  show_reading_time = true
