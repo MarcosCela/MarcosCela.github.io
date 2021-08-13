@@ -1,20 +1,127 @@
-<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="IE=edge,chrome=1"><title>Wiki | Setting up Kubernetes ApiServer auditing with ELK stack</title><meta name=HandheldFriendly content="True"><meta name=MobileOptimized content="320"><meta name=viewport content="width=device-width,minimum-scale=1"><meta name=generator content="Hugo 0.83.1"><meta name=ROBOTS content="NOINDEX, NOFOLLOW"><link href=/dist/css/app.955516233bcafa4d2a1c13cea63c7b50.css rel=stylesheet><link rel="shortcut icon" href=/images/favicon.ico type=image/x-icon><meta property="og:title" content="Setting up Kubernetes ApiServer auditing with ELK stack"><meta property="og:description" content="Simple tutorial on how to set up Kubernetes apiserver auditing, with ELK backend"><meta property="og:type" content="article"><meta property="og:url" content="https://wiki.mcela.dev/guides/kubernetes/elk-audit/"><meta property="article:section" content="guides"><meta property="article:published_time" content="2019-02-12T00:00:00+00:00"><meta property="article:modified_time" content="2019-02-12T00:00:00+00:00"><meta itemprop=name content="Setting up Kubernetes ApiServer auditing with ELK stack"><meta itemprop=description content="Simple tutorial on how to set up Kubernetes apiserver auditing, with ELK backend"><meta itemprop=datePublished content="2019-02-12T00:00:00+00:00"><meta itemprop=dateModified content="2019-02-12T00:00:00+00:00"><meta itemprop=wordCount content="1244"><meta itemprop=keywords content="kubernetes,elk,audit,logstash,kibana,elasticsearch,"><meta name=twitter:card content="summary"><meta name=twitter:title content="Setting up Kubernetes ApiServer auditing with ELK stack"><meta name=twitter:description content="Simple tutorial on how to set up Kubernetes apiserver auditing, with ELK backend"></head><body class="ma0 avenir bg-near-white"><header class="cover bg-top" style=background-image:url(https://wiki.mcela.dev/images/elk-audit/ELK.png)><div class="pb3-m pb6-l bg-black-60"><nav class="pv3 ph3 ph4-ns" role=navigation><div class="flex-l justify-between items-center center"><a href=https://wiki.mcela.dev/ class="f3 fw2 hover-white no-underline white-90 dib">Wiki</a><div class="flex-l items-center"><ul class="pl0 mr3"><li class="list f5 f4-ns fw4 dib pr3"><a class="hover-white no-underline white-90" href=/about/ title="About page">About</a></li><li class="list f5 f4-ns fw4 dib pr3"><a class="hover-white no-underline white-90" href=/guides/ title="Guides page">Guides</a></li></ul><a href=https://es.linkedin.com/in/marcoscelalopez target=_blank class="link-transition linkedin link dib z-999 pt3 pt0-l mr1" title="LinkedIn link" rel=noopener aria-label="follow on LinkedIn——Opens in a new window"><svg height="32" style="enable-background:new 0 0 65 65" viewBox="0 0 65 65" width="32" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M50.837 48.137V36.425c0-6.275-3.35-9.195-7.816-9.195-3.604.0-5.219 1.983-6.119 3.374V27.71h-6.79c.09 1.917.0 20.427.0 20.427h6.79V36.729c0-.609.044-1.219.224-1.655.49-1.22 1.607-2.483 3.482-2.483 2.458.0 3.44 1.873 3.44 4.618v10.929H50.837zM22.959 24.922c2.367.0 3.842-1.57 3.842-3.531-.044-2.003-1.475-3.528-3.797-3.528s-3.841 1.524-3.841 3.528c0 1.961 1.474 3.531 3.753 3.531H22.959zM34 64C17.432 64 4 50.568 4 34 4 17.431 17.432 4 34 4s30 13.431 30 30c0 16.568-13.432 30-30 30zM26.354 48.137V27.71h-6.789v20.427h6.789z" style="fill-rule:evenodd;clip-rule:evenodd;fill:"/></svg><span class=new-window><svg height="8" style="enable-background:new 0 0 1000 1000" viewBox="0 0 1e3 1e3" width="8" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M598 128h298v298h-86V274L392 692l-60-60 418-418H598v-86zM810 810V512h86v298c0 46-40 86-86 86H214c-48 0-86-40-86-86V214c0-46 38-86 86-86h298v86H214v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;fill:"/></svg></span></a><a href=http://github.com/MarcosCela target=_blank class="link-transition github link dib z-999 pt3 pt0-l mr1" title="Github link" rel=noopener aria-label="follow on Github——Opens in a new window"><svg height="32" style="enable-background:new 0 0 512 512" viewBox="0 0 512 512" width="32" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M256 32C132.3 32 32 134.8 32 261.7c0 101.5 64.2 187.5 153.2 217.9 11.2 2.1 15.3-5 15.3-11.1.0-5.5-.2-19.9-.3-39.1-62.3 13.9-75.5-30.8-75.5-30.8-10.2-26.5-24.9-33.6-24.9-33.6-20.3-14.3 1.5-14 1.5-14 22.5 1.6 34.3 23.7 34.3 23.7 20 35.1 52.4 25 65.2 19.1 2-14.8 7.8-25 14.2-30.7-49.7-5.8-102-25.5-102-113.5.0-25.1 8.7-45.6 23-61.6-2.3-5.8-10-29.2 2.2-60.8.0.0 18.8-6.2 61.6 23.5 17.9-5.1 37-7.6 56.1-7.7 19 .1 38.2 2.6 56.1 7.7 42.8-29.7 61.5-23.5 61.5-23.5 12.2 31.6 4.5 55 2.2 60.8 14.3 16.1 23 36.6 23 61.6.0 88.2-52.4 107.6-102.3 113.3 8 7.1 15.2 21.1 15.2 42.5.0 30.7-.3 55.5-.3 63 0 6.1 4 13.3 15.4 11C415.9 449.1 480 363.1 480 261.7 480 134.8 379.7 32 256 32z"/></svg><span class=new-window><svg height="8" style="enable-background:new 0 0 1000 1000" viewBox="0 0 1e3 1e3" width="8" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M598 128h298v298h-86V274L392 692l-60-60 418-418H598v-86zM810 810V512h86v298c0 46-40 86-86 86H214c-48 0-86-40-86-86V214c0-46 38-86 86-86h298v86H214v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;fill:"/></svg></span></a><a href=https://gitlab.com/Marcos.Cela target=_blank class="link-transition gitlab link dib z-999 pt3 pt0-l mr1" title="Gitlab link" rel=noopener aria-label="follow on Gitlab——Opens in a new window"><svg height="32" style="enable-background:new 0 0 512 512" viewBox="0 0 512 512" width="32" xmlns="http://www.w3.org/2000/svg"><path d="M29.782 199.732 256 493.714 8.074 309.699c-6.856-5.142-9.712-13.996-7.141-21.993l28.849-87.974zm75.405-174.806c-3.142-8.854-15.709-8.854-18.851.0L29.782 199.732h131.961L105.187 24.926zm56.556 174.806L256 493.714l94.257-293.982H161.743zm349.324 87.974-28.849-87.974L256 493.714l247.926-184.015c6.855-5.142 9.711-13.996 7.141-21.993zm-85.404-262.78c-3.142-8.854-15.709-8.854-18.851.0l-56.555 174.806h131.961L425.663 24.926z"/></svg><span class=new-window><svg height="8" style="enable-background:new 0 0 1000 1000" viewBox="0 0 1e3 1e3" width="8" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M598 128h298v298h-86V274L392 692l-60-60 418-418H598v-86zM810 810V512h86v298c0 46-40 86-86 86H214c-48 0-86-40-86-86V214c0-46 38-86 86-86h298v86H214v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;fill:"/></svg></span></a></div></div></nav><div class="tc-l pv6 ph3 ph4-ns"><h1 class="f2 f1-l fw2 white-90 mb0 lh-title">Setting up Kubernetes ApiServer auditing with ELK stack</h1><h2 class="fw1 f5 f3-l white-80 measure-wide-l center lh-copy mt3 mb4">Simple tutorial on how to set up Kubernetes apiserver auditing, with ELK backend</h2></div></div></header><main class=pb7 role=main><article class="flex-l flex-wrap justify-between mw8 center ph3"><header class="mt4 w-100"><p class="f6 b helvetica tracked">GUIDES</p><h1 class="f1 athelas mb1">Setting up Kubernetes ApiServer auditing with ELK stack</h1><time class="f6 mv4 dib tracked" datetime=2019-02-12T00:00:00Z>February 12, 2019</time>
-<span class="f6 mv4 dib tracked">- 6 minutes read</span>
-<span class="f6 mv4 dib tracked">- 1244 words</span></header><section class="nested-copy-line-height lh-copy serif f4 nested-links nested-img mid-gray pr4-l w-auto-l"><h1 id=what-is-kubernetes-auditing>What is Kubernetes auditing?</h1><p><a href=https://kubernetes.io/docs/tasks/debug-application-cluster/audit/>Kubernetes auditing</a> provides a set of records or log entries documenting
+<!doctype html><html lang=en-us>
+<head>
+<meta charset=utf-8>
+<meta http-equiv=x-ua-compatible content="IE=edge,chrome=1">
+<title>Wiki | Setting up Kubernetes ApiServer auditing with ELK stack</title>
+<meta name=HandheldFriendly content="True">
+<meta name=MobileOptimized content="320">
+<meta name=viewport content="width=device-width,minimum-scale=1">
+<meta name=generator content="Hugo 0.87.0">
+<meta name=ROBOTS content="NOINDEX, NOFOLLOW">
+<link href=/dist/css/app.955516233bcafa4d2a1c13cea63c7b50.css rel=stylesheet>
+<link rel="shortcut icon" href=/images/favicon.ico type=image/x-icon>
+<meta property="og:title" content="Setting up Kubernetes ApiServer auditing with ELK stack">
+<meta property="og:description" content="Simple tutorial on how to set up Kubernetes apiserver auditing, with ELK backend">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://wiki.mcela.dev/guides/kubernetes/elk-audit/"><meta property="article:section" content="guides">
+<meta property="article:published_time" content="2019-02-12T00:00:00+00:00">
+<meta property="article:modified_time" content="2019-02-12T00:00:00+00:00">
+<meta itemprop=name content="Setting up Kubernetes ApiServer auditing with ELK stack">
+<meta itemprop=description content="Simple tutorial on how to set up Kubernetes apiserver auditing, with ELK backend"><meta itemprop=datePublished content="2019-02-12T00:00:00+00:00">
+<meta itemprop=dateModified content="2019-02-12T00:00:00+00:00">
+<meta itemprop=wordCount content="1244">
+<meta itemprop=keywords content="kubernetes,elk,audit,logstash,kibana,elasticsearch,"><meta name=twitter:card content="summary">
+<meta name=twitter:title content="Setting up Kubernetes ApiServer auditing with ELK stack">
+<meta name=twitter:description content="Simple tutorial on how to set up Kubernetes apiserver auditing, with ELK backend">
+</head>
+<body class="ma0 avenir bg-near-white">
+<header class="cover bg-top" style=background-image:url(https://wiki.mcela.dev/images/elk-audit/ELK.png)>
+<div class="pb3-m pb6-l bg-black-60">
+<nav class="pv3 ph3 ph4-ns" role=navigation>
+<div class="flex-l justify-between items-center center">
+<a href=https://wiki.mcela.dev/ class="f3 fw2 hover-white no-underline white-90 dib">
+Wiki
+</a>
+<div class="flex-l items-center">
+<ul class="pl0 mr3">
+<li class="list f5 f4-ns fw4 dib pr3">
+<a class="hover-white no-underline white-90" href=/about/ title="About page">
+About
+</a>
+</li>
+<li class="list f5 f4-ns fw4 dib pr3">
+<a class="hover-white no-underline white-90" href=/guides/ title="Guides page">
+Guides
+</a>
+</li>
+</ul>
+<a href=https://es.linkedin.com/in/marcoscelalopez target=_blank class="link-transition linkedin link dib z-999 pt3 pt0-l mr1" title="LinkedIn link" rel=noopener aria-label="follow on LinkedIn——Opens in a new window"><svg height="32" style="enable-background:new 0 0 65 65" viewBox="0 0 65 65" width="32" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M50.837 48.137V36.425c0-6.275-3.35-9.195-7.816-9.195-3.604.0-5.219 1.983-6.119 3.374V27.71h-6.79c.09 1.917.0 20.427.0 20.427h6.79V36.729c0-.609.044-1.219.224-1.655.49-1.22 1.607-2.483 3.482-2.483 2.458.0 3.44 1.873 3.44 4.618v10.929H50.837zM22.959 24.922c2.367.0 3.842-1.57 3.842-3.531-.044-2.003-1.475-3.528-3.797-3.528s-3.841 1.524-3.841 3.528c0 1.961 1.474 3.531 3.753 3.531H22.959zM34 64C17.432 64 4 50.568 4 34 4 17.431 17.432 4 34 4s30 13.431 30 30c0 16.568-13.432 30-30 30zM26.354 48.137V27.71h-6.789v20.427h6.789z" style="fill-rule:evenodd;clip-rule:evenodd;fill:"/></svg>
+<span class=new-window><svg height="8" style="enable-background:new 0 0 1000 1000" viewBox="0 0 1e3 1e3" width="8" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M598 128h298v298h-86V274L392 692l-60-60 418-418H598v-86zM810 810V512h86v298c0 46-40 86-86 86H214c-48 0-86-40-86-86V214c0-46 38-86 86-86h298v86H214v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;fill:"/></svg>
+</span></a>
+<a href=http://github.com/MarcosCela target=_blank class="link-transition github link dib z-999 pt3 pt0-l mr1" title="Github link" rel=noopener aria-label="follow on Github——Opens in a new window"><svg height="32" style="enable-background:new 0 0 512 512" viewBox="0 0 512 512" width="32" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M256 32C132.3 32 32 134.8 32 261.7c0 101.5 64.2 187.5 153.2 217.9 11.2 2.1 15.3-5 15.3-11.1.0-5.5-.2-19.9-.3-39.1-62.3 13.9-75.5-30.8-75.5-30.8-10.2-26.5-24.9-33.6-24.9-33.6-20.3-14.3 1.5-14 1.5-14 22.5 1.6 34.3 23.7 34.3 23.7 20 35.1 52.4 25 65.2 19.1 2-14.8 7.8-25 14.2-30.7-49.7-5.8-102-25.5-102-113.5.0-25.1 8.7-45.6 23-61.6-2.3-5.8-10-29.2 2.2-60.8.0.0 18.8-6.2 61.6 23.5 17.9-5.1 37-7.6 56.1-7.7 19 .1 38.2 2.6 56.1 7.7 42.8-29.7 61.5-23.5 61.5-23.5 12.2 31.6 4.5 55 2.2 60.8 14.3 16.1 23 36.6 23 61.6.0 88.2-52.4 107.6-102.3 113.3 8 7.1 15.2 21.1 15.2 42.5.0 30.7-.3 55.5-.3 63 0 6.1 4 13.3 15.4 11C415.9 449.1 480 363.1 480 261.7 480 134.8 379.7 32 256 32z"/></svg>
+<span class=new-window><svg height="8" style="enable-background:new 0 0 1000 1000" viewBox="0 0 1e3 1e3" width="8" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M598 128h298v298h-86V274L392 692l-60-60 418-418H598v-86zM810 810V512h86v298c0 46-40 86-86 86H214c-48 0-86-40-86-86V214c0-46 38-86 86-86h298v86H214v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;fill:"/></svg>
+</span></a>
+<a href=https://gitlab.com/Marcos.Cela target=_blank class="link-transition gitlab link dib z-999 pt3 pt0-l mr1" title="Gitlab link" rel=noopener aria-label="follow on Gitlab——Opens in a new window"><svg height="32" style="enable-background:new 0 0 512 512" viewBox="0 0 512 512" width="32" xmlns="http://www.w3.org/2000/svg"><path d="M29.782 199.732 256 493.714 8.074 309.699c-6.856-5.142-9.712-13.996-7.141-21.993l28.849-87.974zm75.405-174.806c-3.142-8.854-15.709-8.854-18.851.0L29.782 199.732h131.961L105.187 24.926zm56.556 174.806L256 493.714l94.257-293.982H161.743zm349.324 87.974-28.849-87.974L256 493.714l247.926-184.015c6.855-5.142 9.711-13.996 7.141-21.993zm-85.404-262.78c-3.142-8.854-15.709-8.854-18.851.0l-56.555 174.806h131.961L425.663 24.926z"/></svg>
+<span class=new-window><svg height="8" style="enable-background:new 0 0 1000 1000" viewBox="0 0 1e3 1e3" width="8" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M598 128h298v298h-86V274L392 692l-60-60 418-418H598v-86zM810 810V512h86v298c0 46-40 86-86 86H214c-48 0-86-40-86-86V214c0-46 38-86 86-86h298v86H214v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;fill:"/></svg>
+</span></a>
+</div>
+</div>
+</nav>
+<div class="tc-l pv6 ph3 ph4-ns">
+<h1 class="f2 f1-l fw2 white-90 mb0 lh-title">Setting up Kubernetes ApiServer auditing with ELK stack</h1>
+<h2 class="fw1 f5 f3-l white-80 measure-wide-l center lh-copy mt3 mb4">
+Simple tutorial on how to set up Kubernetes apiserver auditing, with ELK backend
+</h2>
+</div>
+</div>
+</header>
+<main class=pb7 role=main>
+<article class="flex-l flex-wrap justify-between mw8 center ph3">
+<header class="mt4 w-100">
+<p class="f6 b helvetica tracked">
+GUIDES
+</p>
+<h1 class="f1 athelas mb1">Setting up Kubernetes ApiServer auditing with ELK stack</h1>
+<time class="f6 mv4 dib tracked" datetime=2019-02-12T00:00:00Z>February 12, 2019</time>
+<span class="f6 mv4 dib tracked"> - 6 minutes read</span>
+<span class="f6 mv4 dib tracked"> - 1244 words</span>
+</header>
+<section class="nested-copy-line-height lh-copy serif f4 nested-links nested-img mid-gray pr4-l w-auto-l"><h1 id=what-is-kubernetes-auditing>What is Kubernetes auditing?</h1>
+<p><a href=https://kubernetes.io/docs/tasks/debug-application-cluster/audit/>Kubernetes auditing</a> provides a set of records or log entries documenting
 what actions have affected the system. Basically, we have access to every API call, along
-with some metadata.</p><p>This can be really useful:</p><ul><li>It provides you with security-relevant data, you can see WHO changed WHAT and WHEN.</li><li>It can be used to detect bad configurations or possible attacks if your API server
+with some metadata.</p>
+<p>This can be really useful:</p>
+<ul>
+<li>It provides you with security-relevant data, you can see WHO changed WHAT and WHEN.</li>
+<li>It can be used to detect bad configurations or possible attacks if your API server
 is exposed to the internet (if your apiserver shows a large ammount of 401 Unauthorized
-responses, someone might be trying to access your cluster with invalid credentials).</li><li>You can detect patterns of usage based on user agents, who is making a lot of requests&mldr;</li><li>Sometimes this is a hard requirement for organization-wide certifications that force
-you to have an audit log of every system.</li></ul><h1 id=what-is-elk>What is ELK?</h1><p><a href=https://logz.io/learn/complete-guide-elk-stack/>ELK</a> stands for <a href=https://www.elastic.co/products/elasticsearch>Elasticsearch</a>, <a href=https://www.elastic.co/products/logstash>Logstash</a>
+responses, someone might be trying to access your cluster with invalid credentials).</li>
+<li>You can detect patterns of usage based on user agents, who is making a lot of requests&mldr;</li>
+<li>Sometimes this is a hard requirement for organization-wide certifications that force
+you to have an audit log of every system.</li>
+</ul>
+<h1 id=what-is-elk>What is ELK?</h1>
+<p><a href=https://logz.io/learn/complete-guide-elk-stack/>ELK</a> stands for <a href=https://www.elastic.co/products/elasticsearch>Elasticsearch</a>, <a href=https://www.elastic.co/products/logstash>Logstash</a>
 and <a href=https://www.elastic.co/products/kibana>Kibana</a>. Basically, Elasticsearch is a NoSQL database, Logstash is a log
-pipeline (moves loges from sources to destinations) and Kibana is a visualization tool (think of Grafana).</p><p>They are all developed by Elastic, and are used together to perform log collection, aggregation,
+pipeline (moves loges from sources to destinations) and Kibana is a visualization tool (think of Grafana).</p>
+<p>They are all developed by Elastic, and are used together to perform log collection, aggregation,
 storage, visualization and analysis. Sounds cool right? Let&rsquo;s see a very simple example on how
-to setup this with docker-compose and a working K8s 1.10 cluster.</p><h2 id=actual-tutorial>Actual tutorial</h2><p>You will need the following ingredients:</p><ul><li>A working kubernetes cluster. I will use v1.10, so some flags might change between versions.</li><li>Somewhere to deploy your test ELK stack (I will use a different host with docker-compose).</li><li>Some time.</li></ul><h3 id=setting-up-elk>Setting up ELK</h3><p>To set up ELK you can use almost any guide, but I deeply recommend
+to setup this with docker-compose and a working K8s 1.10 cluster.</p>
+<h2 id=actual-tutorial>Actual tutorial</h2>
+<p>You will need the following ingredients:</p>
+<ul>
+<li>A working kubernetes cluster. I will use v1.10, so some flags might change between versions.</li>
+<li>Somewhere to deploy your test ELK stack (I will use a different host with docker-compose).</li>
+<li>Some time.</li>
+</ul>
+<h3 id=setting-up-elk>Setting up ELK</h3>
+<p>To set up ELK you can use almost any guide, but I deeply recommend
 <a href=https://github.com/deviantony/docker-elk>github/deviantony/docker-elk</a>, since it will let you set up a very
-simple ELK stack with literally <strong>docker-compose up</strong>.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>git clone https://github.com/deviantony/docker-elk --branch<span style=color:#f92672>=</span>master --depht<span style=color:#f92672>=</span><span style=color:#ae81ff>1</span>
+simple ELK stack with literally <strong>docker-compose up</strong>.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>git clone https://github.com/deviantony/docker-elk --branch<span style=color:#f92672>=</span>master --depht<span style=color:#f92672>=</span><span style=color:#ae81ff>1</span>
 cd docker-elk
 docker-compose up
-</code></pre></div><p>We should be able to see all of the components running, and the Kibana interface at port 5601.</p><figure><img src=/images/elk-audit/kibana-ui.png><figcaption><h4>Kibana UI after installing</h4></figcaption></figure><p>For the sake of the guide, the deployed stack will have an accessible Logstash in:</p><ul><li>logstash.local</li></ul><p>At the same time, we create a pipeline file for logstash, with the following contents:</p><pre><code># Instruct logstash to listen in port 5000. The K8s Apiserver will then send
+</code></pre></div><p>We should be able to see all of the components running, and the Kibana interface at port 5601.</p>
+<figure><img src=/images/elk-audit/kibana-ui.png><figcaption>
+<h4>Kibana UI after installing</h4>
+</figcaption>
+</figure>
+<p>For the sake of the guide, the deployed stack will have an accessible Logstash in:</p>
+<ul>
+<li>logstash.local</li>
+</ul>
+<p>At the same time, we create a pipeline file for logstash, with the following contents:</p>
+<pre><code># Instruct logstash to listen in port 5000. The K8s Apiserver will then send
 # the logs here via webhook
 input{
     http{
@@ -43,8 +150,11 @@ output {
 		index =&gt; &quot;kubernetes&quot;
 	}
 }
-</code></pre><h3 id=setting-up-kubernetes>Setting up Kubernetes</h3><p>We will then setup the following files in the Kubernetes nodes that have an API server. We have
-to create a new file that the API server will mount.</p><p>Let&rsquo;s say we create a file in <em><strong>/etc/kubernetes/policy-webhook.yml</strong></em> with the following contents:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=color:#f92672>apiVersion</span>: <span style=color:#ae81ff>v1</span>
+</code></pre><h3 id=setting-up-kubernetes>Setting up Kubernetes</h3>
+<p>We will then setup the following files in the Kubernetes nodes that have an API server. We have
+to create a new file that the API server will mount.</p>
+<p>Let&rsquo;s say we create a file in <em><strong>/etc/kubernetes/policy-webhook.yml</strong></em> with the following contents:</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=color:#f92672>apiVersion</span>: <span style=color:#ae81ff>v1</span>
 <span style=color:#f92672>clusters</span>:
 - <span style=color:#f92672>cluster</span>:
     <span style=color:#75715e># Send the API server events to logstash, via the webhook plugin</span>
@@ -66,7 +176,8 @@ if you record every single request (or &ldquo;event&rdquo;) in the API server, y
 and it will cause a decent ammount of extra load in the API server.
 To select what kind of events you want to log or record, you can use an Audit policy file.
 As an example, we will use the GCE recommended audit policy file, that we will copy
-to <em><strong>/etc/kubernetes/audit-policy.yml</strong></em> in every node that hosts the API server:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=color:#f92672>apiVersion</span>: <span style=color:#ae81ff>audit.k8s.io/v1beta1</span>
+to <em><strong>/etc/kubernetes/audit-policy.yml</strong></em> in every node that hosts the API server:</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=color:#f92672>apiVersion</span>: <span style=color:#ae81ff>audit.k8s.io/v1beta1</span>
 <span style=color:#f92672>kind</span>: <span style=color:#ae81ff>Policy</span>
 <span style=color:#f92672>rules</span>:
   - <span style=color:#f92672>level</span>: <span style=color:#ae81ff>None</span>
@@ -213,12 +324,77 @@ to <em><strong>/etc/kubernetes/audit-policy.yml</strong></em> in every node that
     <span style=color:#f92672>omitStages</span>:
       - <span style=color:#e6db74>&#34;RequestReceived&#34;</span>
 
-</code></pre></div><p>We also need to modify the API Server configuration file and add the following flags:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml>    - --<span style=color:#ae81ff>audit-policy-file=/etc/kubernetes/audit-policy.yml</span>
+</code></pre></div><p>We also need to modify the API Server configuration file and add the following flags:</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml>    - --<span style=color:#ae81ff>audit-policy-file=/etc/kubernetes/audit-policy.yml</span>
     - --<span style=color:#ae81ff>audit-webhook-config-file=/etc/kubernetes/policy-webhook.yml</span>
     - --<span style=color:#ae81ff>feature-gates=AdvancedAuditing=true</span>
 </code></pre></div><p>With these commands we basically tell the API server to use the <em><strong>audit-policy.yml</strong></em> rules
-to select what events are worthy of being recorded.</p><p>At the same time, we select where we want to send these events with the <em><strong>policy-webhook.yml</strong></em>
-file. In this case, we want the events to be sent to logstash.</p><p>Once we have this setup, Logstash will start to receive events, and save them in Elasticsearch. We
+to select what events are worthy of being recorded.</p>
+<p>At the same time, we select where we want to send these events with the <em><strong>policy-webhook.yml</strong></em>
+file. In this case, we want the events to be sent to logstash.</p>
+<p>Once we have this setup, Logstash will start to receive events, and save them in Elasticsearch. We
 can then go to Kibana and see that we have a new Index Pattern that we can use then to build
-visualizations:<figure><img src=/images/elk-audit/kibana-kubernetes-index.png><figcaption><h4>Kibana UI showing the Kubernetes Index coming from Logstash</h4></figcaption></figure></p><p>We can then access the Kibana UI, and add the &ldquo;Kubernetes&rdquo; index pattern (we configure
-this in Logstash), to start building our dashboards.</p><ul class=pa0><li class=list><a href=/tags/kubernetes class="link f5 grow no-underline br-pill ba ph3 pv2 mb2 dib black sans-serif">kubernetes</a></li><li class=list><a href=/tags/elk class="link f5 grow no-underline br-pill ba ph3 pv2 mb2 dib black sans-serif">elk</a></li><li class=list><a href=/tags/audit class="link f5 grow no-underline br-pill ba ph3 pv2 mb2 dib black sans-serif">audit</a></li><li class=list><a href=/tags/logstash class="link f5 grow no-underline br-pill ba ph3 pv2 mb2 dib black sans-serif">logstash</a></li><li class=list><a href=/tags/kibana class="link f5 grow no-underline br-pill ba ph3 pv2 mb2 dib black sans-serif">kibana</a></li><li class=list><a href=/tags/elasticsearch class="link f5 grow no-underline br-pill ba ph3 pv2 mb2 dib black sans-serif">elasticsearch</a></li></ul><div class=mt6></div></section><aside class="w-30-l mt6-l"><div class="bg-light-gray pa3 nested-list-reset nested-copy-line-height nested-links"><p class="f5 b mb3">Related</p><ul class="pa0 list"><li class=mb2><a href=/guides/kubernetes/kubernetes-dns-problems-in-heterogeneous-clusters/>Kubernetes DNS problems in heterogeneous clusters</a></li></ul></div></aside></article></main><footer class="bg-black bottom-0 w-100 pa3" role=contentinfo><div class="flex justify-between"><a class="f4 fw4 hover-white no-underline white-70 dn dib-ns pv2 ph3" href=https://wiki.mcela.dev/>&copy; 2021 Wiki</a><div><a href=https://es.linkedin.com/in/marcoscelalopez target=_blank class="link-transition linkedin link dib z-999 pt3 pt0-l mr1" title="LinkedIn link" rel=noopener aria-label="follow on LinkedIn——Opens in a new window"><svg height="32" style="enable-background:new 0 0 65 65" viewBox="0 0 65 65" width="32" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M50.837 48.137V36.425c0-6.275-3.35-9.195-7.816-9.195-3.604.0-5.219 1.983-6.119 3.374V27.71h-6.79c.09 1.917.0 20.427.0 20.427h6.79V36.729c0-.609.044-1.219.224-1.655.49-1.22 1.607-2.483 3.482-2.483 2.458.0 3.44 1.873 3.44 4.618v10.929H50.837zM22.959 24.922c2.367.0 3.842-1.57 3.842-3.531-.044-2.003-1.475-3.528-3.797-3.528s-3.841 1.524-3.841 3.528c0 1.961 1.474 3.531 3.753 3.531H22.959zM34 64C17.432 64 4 50.568 4 34 4 17.431 17.432 4 34 4s30 13.431 30 30c0 16.568-13.432 30-30 30zM26.354 48.137V27.71h-6.789v20.427h6.789z" style="fill-rule:evenodd;clip-rule:evenodd;fill:"/></svg><span class=new-window><svg height="8" style="enable-background:new 0 0 1000 1000" viewBox="0 0 1e3 1e3" width="8" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M598 128h298v298h-86V274L392 692l-60-60 418-418H598v-86zM810 810V512h86v298c0 46-40 86-86 86H214c-48 0-86-40-86-86V214c0-46 38-86 86-86h298v86H214v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;fill:"/></svg></span></a><a href=http://github.com/MarcosCela target=_blank class="link-transition github link dib z-999 pt3 pt0-l mr1" title="Github link" rel=noopener aria-label="follow on Github——Opens in a new window"><svg height="32" style="enable-background:new 0 0 512 512" viewBox="0 0 512 512" width="32" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M256 32C132.3 32 32 134.8 32 261.7c0 101.5 64.2 187.5 153.2 217.9 11.2 2.1 15.3-5 15.3-11.1.0-5.5-.2-19.9-.3-39.1-62.3 13.9-75.5-30.8-75.5-30.8-10.2-26.5-24.9-33.6-24.9-33.6-20.3-14.3 1.5-14 1.5-14 22.5 1.6 34.3 23.7 34.3 23.7 20 35.1 52.4 25 65.2 19.1 2-14.8 7.8-25 14.2-30.7-49.7-5.8-102-25.5-102-113.5.0-25.1 8.7-45.6 23-61.6-2.3-5.8-10-29.2 2.2-60.8.0.0 18.8-6.2 61.6 23.5 17.9-5.1 37-7.6 56.1-7.7 19 .1 38.2 2.6 56.1 7.7 42.8-29.7 61.5-23.5 61.5-23.5 12.2 31.6 4.5 55 2.2 60.8 14.3 16.1 23 36.6 23 61.6.0 88.2-52.4 107.6-102.3 113.3 8 7.1 15.2 21.1 15.2 42.5.0 30.7-.3 55.5-.3 63 0 6.1 4 13.3 15.4 11C415.9 449.1 480 363.1 480 261.7 480 134.8 379.7 32 256 32z"/></svg><span class=new-window><svg height="8" style="enable-background:new 0 0 1000 1000" viewBox="0 0 1e3 1e3" width="8" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M598 128h298v298h-86V274L392 692l-60-60 418-418H598v-86zM810 810V512h86v298c0 46-40 86-86 86H214c-48 0-86-40-86-86V214c0-46 38-86 86-86h298v86H214v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;fill:"/></svg></span></a><a href=https://gitlab.com/Marcos.Cela target=_blank class="link-transition gitlab link dib z-999 pt3 pt0-l mr1" title="Gitlab link" rel=noopener aria-label="follow on Gitlab——Opens in a new window"><svg height="32" style="enable-background:new 0 0 512 512" viewBox="0 0 512 512" width="32" xmlns="http://www.w3.org/2000/svg"><path d="M29.782 199.732 256 493.714 8.074 309.699c-6.856-5.142-9.712-13.996-7.141-21.993l28.849-87.974zm75.405-174.806c-3.142-8.854-15.709-8.854-18.851.0L29.782 199.732h131.961L105.187 24.926zm56.556 174.806L256 493.714l94.257-293.982H161.743zm349.324 87.974-28.849-87.974L256 493.714l247.926-184.015c6.855-5.142 9.711-13.996 7.141-21.993zm-85.404-262.78c-3.142-8.854-15.709-8.854-18.851.0l-56.555 174.806h131.961L425.663 24.926z"/></svg><span class=new-window><svg height="8" style="enable-background:new 0 0 1000 1000" viewBox="0 0 1e3 1e3" width="8" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M598 128h298v298h-86V274L392 692l-60-60 418-418H598v-86zM810 810V512h86v298c0 46-40 86-86 86H214c-48 0-86-40-86-86V214c0-46 38-86 86-86h298v86H214v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;fill:"/></svg></span></a></div></div></footer><script src=/dist/js/app.3fc0f988d21662902933.js></script></body></html>
+visualizations:
+<figure><img src=/images/elk-audit/kibana-kubernetes-index.png><figcaption>
+<h4>Kibana UI showing the Kubernetes Index coming from Logstash</h4>
+</figcaption>
+</figure>
+</p>
+<p>We can then access the Kibana UI, and add the &ldquo;Kubernetes&rdquo; index pattern (we configure
+this in Logstash), to start building our dashboards.</p>
+<ul class=pa0>
+<li class=list>
+<a href=/tags/kubernetes class="link f5 grow no-underline br-pill ba ph3 pv2 mb2 dib black sans-serif">kubernetes</a>
+</li>
+<li class=list>
+<a href=/tags/elk class="link f5 grow no-underline br-pill ba ph3 pv2 mb2 dib black sans-serif">elk</a>
+</li>
+<li class=list>
+<a href=/tags/audit class="link f5 grow no-underline br-pill ba ph3 pv2 mb2 dib black sans-serif">audit</a>
+</li>
+<li class=list>
+<a href=/tags/logstash class="link f5 grow no-underline br-pill ba ph3 pv2 mb2 dib black sans-serif">logstash</a>
+</li>
+<li class=list>
+<a href=/tags/kibana class="link f5 grow no-underline br-pill ba ph3 pv2 mb2 dib black sans-serif">kibana</a>
+</li>
+<li class=list>
+<a href=/tags/elasticsearch class="link f5 grow no-underline br-pill ba ph3 pv2 mb2 dib black sans-serif">elasticsearch</a>
+</li>
+</ul>
+<div class=mt6>
+</div>
+</section>
+<aside class="w-30-l mt6-l">
+<div class="bg-light-gray pa3 nested-list-reset nested-copy-line-height nested-links">
+<p class="f5 b mb3">Related</p>
+<ul class="pa0 list">
+<li class=mb2>
+<a href=/guides/kubernetes/kubernetes-dns-problems-in-heterogeneous-clusters/>Kubernetes DNS problems in heterogeneous clusters</a>
+</li>
+</ul>
+</div>
+</aside>
+</article>
+</main>
+<footer class="bg-black bottom-0 w-100 pa3" role=contentinfo>
+<div class="flex justify-between">
+<a class="f4 fw4 hover-white no-underline white-70 dn dib-ns pv2 ph3" href=https://wiki.mcela.dev/>
+&copy; 2021 Wiki
+</a>
+<div>
+<a href=https://es.linkedin.com/in/marcoscelalopez target=_blank class="link-transition linkedin link dib z-999 pt3 pt0-l mr1" title="LinkedIn link" rel=noopener aria-label="follow on LinkedIn——Opens in a new window"><svg height="32" style="enable-background:new 0 0 65 65" viewBox="0 0 65 65" width="32" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M50.837 48.137V36.425c0-6.275-3.35-9.195-7.816-9.195-3.604.0-5.219 1.983-6.119 3.374V27.71h-6.79c.09 1.917.0 20.427.0 20.427h6.79V36.729c0-.609.044-1.219.224-1.655.49-1.22 1.607-2.483 3.482-2.483 2.458.0 3.44 1.873 3.44 4.618v10.929H50.837zM22.959 24.922c2.367.0 3.842-1.57 3.842-3.531-.044-2.003-1.475-3.528-3.797-3.528s-3.841 1.524-3.841 3.528c0 1.961 1.474 3.531 3.753 3.531H22.959zM34 64C17.432 64 4 50.568 4 34 4 17.431 17.432 4 34 4s30 13.431 30 30c0 16.568-13.432 30-30 30zM26.354 48.137V27.71h-6.789v20.427h6.789z" style="fill-rule:evenodd;clip-rule:evenodd;fill:"/></svg>
+<span class=new-window><svg height="8" style="enable-background:new 0 0 1000 1000" viewBox="0 0 1e3 1e3" width="8" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M598 128h298v298h-86V274L392 692l-60-60 418-418H598v-86zM810 810V512h86v298c0 46-40 86-86 86H214c-48 0-86-40-86-86V214c0-46 38-86 86-86h298v86H214v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;fill:"/></svg>
+</span></a>
+<a href=http://github.com/MarcosCela target=_blank class="link-transition github link dib z-999 pt3 pt0-l mr1" title="Github link" rel=noopener aria-label="follow on Github——Opens in a new window"><svg height="32" style="enable-background:new 0 0 512 512" viewBox="0 0 512 512" width="32" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M256 32C132.3 32 32 134.8 32 261.7c0 101.5 64.2 187.5 153.2 217.9 11.2 2.1 15.3-5 15.3-11.1.0-5.5-.2-19.9-.3-39.1-62.3 13.9-75.5-30.8-75.5-30.8-10.2-26.5-24.9-33.6-24.9-33.6-20.3-14.3 1.5-14 1.5-14 22.5 1.6 34.3 23.7 34.3 23.7 20 35.1 52.4 25 65.2 19.1 2-14.8 7.8-25 14.2-30.7-49.7-5.8-102-25.5-102-113.5.0-25.1 8.7-45.6 23-61.6-2.3-5.8-10-29.2 2.2-60.8.0.0 18.8-6.2 61.6 23.5 17.9-5.1 37-7.6 56.1-7.7 19 .1 38.2 2.6 56.1 7.7 42.8-29.7 61.5-23.5 61.5-23.5 12.2 31.6 4.5 55 2.2 60.8 14.3 16.1 23 36.6 23 61.6.0 88.2-52.4 107.6-102.3 113.3 8 7.1 15.2 21.1 15.2 42.5.0 30.7-.3 55.5-.3 63 0 6.1 4 13.3 15.4 11C415.9 449.1 480 363.1 480 261.7 480 134.8 379.7 32 256 32z"/></svg>
+<span class=new-window><svg height="8" style="enable-background:new 0 0 1000 1000" viewBox="0 0 1e3 1e3" width="8" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M598 128h298v298h-86V274L392 692l-60-60 418-418H598v-86zM810 810V512h86v298c0 46-40 86-86 86H214c-48 0-86-40-86-86V214c0-46 38-86 86-86h298v86H214v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;fill:"/></svg>
+</span></a>
+<a href=https://gitlab.com/Marcos.Cela target=_blank class="link-transition gitlab link dib z-999 pt3 pt0-l mr1" title="Gitlab link" rel=noopener aria-label="follow on Gitlab——Opens in a new window"><svg height="32" style="enable-background:new 0 0 512 512" viewBox="0 0 512 512" width="32" xmlns="http://www.w3.org/2000/svg"><path d="M29.782 199.732 256 493.714 8.074 309.699c-6.856-5.142-9.712-13.996-7.141-21.993l28.849-87.974zm75.405-174.806c-3.142-8.854-15.709-8.854-18.851.0L29.782 199.732h131.961L105.187 24.926zm56.556 174.806L256 493.714l94.257-293.982H161.743zm349.324 87.974-28.849-87.974L256 493.714l247.926-184.015c6.855-5.142 9.711-13.996 7.141-21.993zm-85.404-262.78c-3.142-8.854-15.709-8.854-18.851.0l-56.555 174.806h131.961L425.663 24.926z"/></svg>
+<span class=new-window><svg height="8" style="enable-background:new 0 0 1000 1000" viewBox="0 0 1e3 1e3" width="8" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M598 128h298v298h-86V274L392 692l-60-60 418-418H598v-86zM810 810V512h86v298c0 46-40 86-86 86H214c-48 0-86-40-86-86V214c0-46 38-86 86-86h298v86H214v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;fill:"/></svg>
+</span></a>
+</div>
+</div>
+</footer>
+<script src=/dist/js/app.3fc0f988d21662902933.js></script>
+</body>
+</html>
